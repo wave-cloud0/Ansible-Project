@@ -1,0 +1,51 @@
+---
+- name: Server Details
+  hosts: all
+  remote_user: vagrant
+  become: yes
+  become_user: root
+
+  tasks:
+    - name: Installing Apache (httpd)
+      apt:
+        name: apache2
+        state: present
+
+    - name: Install PHP
+      apt:
+        name: php
+        state: present
+
+    - name: Set timezone to Africa/Lagos
+      timezone:
+        name: Asia/Tokyo
+
+    - name: Modify php.ini file
+      lineinfile:
+        dest: /etc/php/7.4/cli/php.ini
+        regexp: '^date\.timezone'
+        line: 'date.timezone = Africa/Lagos'
+        state: 'present'
+        backup: yes
+
+    - name: Modify php.ini file for Apache
+      lineinfile:
+        dest: /etc/php/7.4/apache2/php.ini
+        regexp: '^date\.timezone'
+        line: 'date.timezone = Africa/Lagos'
+        state: 'present'
+        backup: yes
+
+    - name: Restart Apache service
+      service:
+        name: apache2
+        state: restarted
+
+    - name: Create index.php
+      copy:
+        content: |
+          <?php
+          echo date("F d, Y h:i:s A e", time());
+          ?>
+        dest: /var/www/html/index.php
+
